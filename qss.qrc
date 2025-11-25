@@ -1,0 +1,42 @@
+<RCC>
+    <qresource prefix="/">
+        <file>icons/keyboard.png</file>
+        <file>icons/opensource/peach.png</file>
+        <file>icons/opensource/qt.png</file>
+        <file>icons/mouse.png</file>
+        <file>icons/maxHover2.png</file>
+        <file>icons/maxNormal2.png</file>
+        <file>icons/maxHover.png</file>
+        <file>icons/maxNormal.png</file>
+        <file>icons/closeHover.png</file>
+        <file>icons/closeNormal.png</file>
+        <file>css/index.css</file>
+        <file>icons/analysic.png</file>
+        <file>icons/home.png</file>
+        <file>icons/setting.png</file>
+        <file>icons/logo.png</file>
+        <file>icons/member.png</file>
+        <file>icons/modular.png</file>
+        <file>icons/money.png</file>
+        <file>icons/phone.png</file>
+        <file>icons/umbrella.png</file>
+        <file>icons/item_01.png</file>
+        <file>icons/miniHover.png</file>
+        <file>icons/miniNormal.png</file>
+        <file>icons/item_02.png</file>
+        <file>icons/mine.png</file>
+        <file>icons/check.png</file>
+        <file>icons/error.png</file>
+        <file>icons/out.png</file>
+        <file>icons/question.png</file>
+        <file>icons/show.png</file>
+        <file>icons/warn.png</file>
+        <file>icons/down.png</file>
+        <file>icons/up.png</file>
+        <file>icons/usb.png</file>
+        <file>icons/about.png</file>
+        <file>icons/opensourcelib.png</file>
+        <file>icons/help.png</file>
+        <file>logo.ico</file>
+    </qresource>
+</RCC>

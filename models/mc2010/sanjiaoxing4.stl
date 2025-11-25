@@ -1,0 +1,86 @@
+solid OBJECT
+  facet normal -1 0 0
+    outer loop
+      vertex -3 -19 -1.252500057220459
+      vertex -3 -10 -1.252500057220459
+      vertex -3 -10 -1.752500057220459
+    endloop
+  endfacet
+  facet normal -1 0 0
+    outer loop
+      vertex -3 -19 -1.252500057220459
+      vertex -3 -10 -1.752500057220459
+      vertex -3 -19 -1.752500057220459
+    endloop
+  endfacet
+  facet normal -0 1 -0
+    outer loop
+      vertex -3 -10 -1.252500057220459
+      vertex 3 -10 -1.252500057220459
+      vertex 3 -10 -1.752500057220459
+    endloop
+  endfacet
+  facet normal -0 1 -0
+    outer loop
+      vertex -3 -10 -1.252500057220459
+      vertex 3 -10 -1.752500057220459
+      vertex -3 -10 -1.752500057220459
+    endloop
+  endfacet
+  facet normal 1 0 -0
+    outer loop
+      vertex 3 -10 -1.252500057220459
+      vertex 3 -19 -1.252500057220459
+      vertex 3 -19 -1.752500057220459
+    endloop
+  endfacet
+  facet normal 1 0 -0
+    outer loop
+      vertex 3 -10 -1.252500057220459
+      vertex 3 -19 -1.752500057220459
+      vertex 3 -10 -1.752500057220459
+    endloop
+  endfacet
+  facet normal -0 -1 0
+    outer loop
+      vertex 3 -19 -1.252500057220459
+      vertex -3 -19 -1.252500057220459
+      vertex -3 -19 -1.752500057220459
+    endloop
+  endfacet
+  facet normal -0 -1 0
+    outer loop
+      vertex 3 -19 -1.252500057220459
+      vertex -3 -19 -1.752500057220459
+      vertex 3 -19 -1.752500057220459
+    endloop
+  endfacet
+  facet normal 0 0 1
+    outer loop
+      vertex -3 -10 -1.252500057220459
+      vertex -3 -19 -1.252500057220459
+      vertex 3 -19 -1.252500057220459
+    endloop
+  endfacet
+  facet normal -0 -0 1
+    outer loop
+      vertex 3 -19 -1.252500057220459
+      vertex 3 -10 -1.252500057220459
+      vertex -3 -10 -1.252500057220459
+    endloop
+  endfacet
+  facet normal 0 0 -1
+    outer loop
+      vertex -3 -10 -1.752500057220459
+      vertex 3 -19 -1.752500057220459
+      vertex -3 -19 -1.752500057220459
+    endloop
+  endfacet
+  facet normal -0 0 -1
+    outer loop
+      vertex 3 -19 -1.752500057220459
+      vertex -3 -10 -1.752500057220459
+      vertex 3 -10 -1.752500057220459
+    endloop
+  endfacet
+endsolid OBJECT
