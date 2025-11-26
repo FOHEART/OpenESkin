@@ -150,6 +150,15 @@ endif()
 
 endif()
 
+if(WIN32)
+add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+            ${CMAKE_SOURCE_DIR}/models
+            $<TARGET_FILE_DIR:${PROJECT_NAME}>/models
+    COMMENT "Copying models directory to executable location"
+)
+endif()
+
 #  自动部署Qt依赖库功能
 if(WIN32)
     # 获取qmake路径并推导windeployqt路径
