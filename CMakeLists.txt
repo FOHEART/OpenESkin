@@ -94,6 +94,24 @@ add_executable(${PROJECT_NAME}
     ${QRC_FILES}
 )
 
+# MSVC 多核编译配置：允许用户通过 -DPARALLEL_BUILD_JOBS=<N> 设置 /MP 的参数，默认 4
+# 使用 -DPARALLEL_BUILD_JOBS=0 将传递不带数字的 `/MP`（由编译器选择），使用 -DPARALLEL_BUILD_JOBS=-1 可禁用此行为
+if(MSVC)
+    set(PARALLEL_BUILD_JOBS "4" CACHE STRING "Number of parallel compile processes for MSVC (/MP). Set to 0 to pass /MP without number. Set to -1 to disable adding /MP.")
+    if(NOT PARALLEL_BUILD_JOBS STREQUAL "-1")
+        if(PARALLEL_BUILD_JOBS STREQUAL "0")
+            set(MSVC_MP_FLAG "/MP")
+        else()
+            # 简单拼接数字到 /MP，未经严格验证；非数字会被直接拼接，用户应传入数字或 0/-1
+            set(MSVC_MP_FLAG "/MP${PARALLEL_BUILD_JOBS}")
+        endif()
+        target_compile_options(${PROJECT_NAME} PRIVATE ${MSVC_MP_FLAG})
+        message(STATUS "MSVC multi-processor compilation enabled: ${MSVC_MP_FLAG} (override with -DPARALLEL_BUILD_JOBS)")
+    else()
+        message(STATUS "MSVC multi-processor compilation disabled (PARALLEL_BUILD_JOBS=-1)")
+    endif()
+endif()
+
 
 # 链接Qt库
 target_link_libraries(${PROJECT_NAME}
