@@ -35,11 +35,11 @@ void AboutDialog::initUi()
 	//ui.lay_bg->setMargin(12);
 
 	//
-	ui.LBL_header->setText(QObject::tr("关于"));
+	ui.LBL_header->setText(QStringLiteral("关于"));
 	ui.LBL_header_2->setText(APP_HEADER);
-	ui.LBL_version->setText(QObject::tr("版本 0.0.9"));
+	ui.LBL_version->setText(QStringLiteral("版本 0.0.9"));
 	ui.LBL_version->setStyleSheet("color: gray;");  // 或 "color: #808080;"/"color: rgb(128, 128, 128);"
-	ui.btn_mbox_btn01->setText(QObject::tr("关闭"));
+	ui.btn_mbox_btn01->setText(QStringLiteral("关闭"));
 
 }
 

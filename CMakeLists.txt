@@ -94,15 +94,20 @@ add_executable(${PROJECT_NAME}
     ${QRC_FILES}
 )
 
-# MSVC 多核编译配置：允许用户通过 -DPARALLEL_BUILD_JOBS=<N> 设置 /MP 的参数，默认 4
-# 使用 -DPARALLEL_BUILD_JOBS=0 将传递不带数字的 `/MP`（由编译器选择），使用 -DPARALLEL_BUILD_JOBS=-1 可禁用此行为
+# MSVC 编译选项
 if(MSVC)
+    # 设置 UTF-8 源字符集和执行字符集，确保中文等 Unicode 字符在 QString 中正确显示
+    # 若不设置，MSVC 默认使用本地编码（中文 Windows 为 GBK），而 Qt 5.15+ 的 tr() 默认期望 UTF-8
+    add_compile_options(/utf-8)
+
+    # MSVC 多核编译配置：允许用户通过 -DPARALLEL_BUILD_JOBS=<N> 设置 /MP 的参数，默认 4
+    # 使用 -DPARALLEL_BUILD_JOBS=0 将传递不带数字的 `/MP`（由编译器选择），使用 -DPARALLEL_BUILD_JOBS=-1 可禁用此行为
     set(PARALLEL_BUILD_JOBS "4" CACHE STRING "Number of parallel compile processes for MSVC (/MP). Set to 0 to pass /MP without number. Set to -1 to disable adding /MP.")
     if(NOT PARALLEL_BUILD_JOBS STREQUAL "-1")
         if(PARALLEL_BUILD_JOBS STREQUAL "0")
             set(MSVC_MP_FLAG "/MP")
         else()
-            # 简单拼接数字到 /MP，未经严格验证；非数字会被直接拼接，用户应传入数字或 0/-1
+            # 简单拼接数字到 /MP，未经严格验证；非数字会被直接拼接， 用户应传入数字或 0/-1
             set(MSVC_MP_FLAG "/MP${PARALLEL_BUILD_JOBS}")
         endif()
         target_compile_options(${PROJECT_NAME} PRIVATE ${MSVC_MP_FLAG})
@@ -127,6 +132,26 @@ target_include_directories(${PROJECT_NAME} PRIVATE .)
 # 在Windows下设置为GUI应用程序（不显示控制台窗口）
 if(WIN32)
     set_target_properties(${PROJECT_NAME} PROPERTIES WIN32_EXECUTABLE ON)
+endif()
+
+# 自动复制 ucrtbased.dll（Debug CRT 调试库）到输出目录
+# 该 DLL 位于 Windows Kits 目录中，但默认不在 PATH 中
+if(MSVC AND CMAKE_BUILD_TYPE STREQUAL "Debug")
+    set(UCRT_DEBUG_DLL "$ENV{WindowsSdkDir}bin/$ENV{WindowsSDKLibVersion}x64/ucrt/ucrtbased.dll")
+    if(NOT EXISTS "${UCRT_DEBUG_DLL}")
+        # 备用查找路径
+        set(UCRT_DEBUG_DLL "D:/Windows Kits/10/bin/10.0.26100.0/x64/ucrt/ucrtbased.dll")
+    endif()
+    if(EXISTS "${UCRT_DEBUG_DLL}")
+        add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                "${UCRT_DEBUG_DLL}"
+                "$<TARGET_FILE_DIR:${PROJECT_NAME}>/"
+            COMMENT "Copying ucrtbased.dll to output directory..."
+        )
+    else()
+        message(WARNING "ucrtbased.dll not found. Please install Windows SDK or copy it manually.")
+    endif()
 endif()
 
 # 为该目标设置 Debug 版本的后缀为 'd'

@@ -180,7 +180,7 @@ void MainWindow::littleShow()
 
 	//显示到系统提示框的信息
 	QString title = "Peach";
-	QString text = QObject::tr("正自动在后台运行");
+	QString text = QStringLiteral("正自动在后台运行");
 	trayIcon->showMessage(title, text, QSystemTrayIcon::Information, 3000); //此参数为提示时长
 }
 
@@ -189,10 +189,10 @@ void MainWindow::littleShow()
 void MainWindow::closeEvent(QCloseEvent* event)
 {
 	m_exitDialog->setIcon("question");
-	m_exitDialog->setBodyText(QObject::tr("退出程序？"));
-	QString minStr = QObject::tr("最小化");
+	m_exitDialog->setBodyText(QStringLiteral("退出程序？"));
+	QString minStr = QStringLiteral("最小化");
 
-	QString exitStr = QObject::tr("退出");
+	QString exitStr = QStringLiteral("退出");
 	m_exitDialog->setButtonText(minStr, exitStr);
 	m_exitDialog->exec();
 	if (exitDialog_return == 0)

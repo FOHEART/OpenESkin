@@ -41,11 +41,11 @@ void MainWindow::setUpUIFromSerialStatus(bool isSerialOpen)
 	if (isSerialOpen)
 	{
 		ui->CBX_serial->setEnabled(false);
-		ui->PB_openSerial->setText(QObject::tr("关闭"));
+		ui->PB_openSerial->setText(QStringLiteral("关闭"));
 	}
 	else
 	{
-		ui->PB_openSerial->setText(QObject::tr("打开"));
+		ui->PB_openSerial->setText(QStringLiteral("打开"));
 		ui->CBX_serial->setEnabled(true);
 	}
 }
@@ -91,7 +91,7 @@ bool MainWindow::SerialPort_open()
 	if (m_serial->open(QIODevice::ReadWrite))
 	{
 		ret = true;
-		m_console->putData(QObject::tr("串口已打开 to %1 : %2, %3, %4, %5, %6\r\n")
+		m_console->putData(QStringLiteral("串口已打开 to %1 : %2, %3, %4, %5, %6\r\n")
 			.arg(p.name).arg(p.stringBaudRate).arg(p.stringDataBits)
 			.arg(p.stringParity).arg(p.stringStopBits).arg(p.stringFlowControl));
 
@@ -101,7 +101,7 @@ bool MainWindow::SerialPort_open()
 	{
 		QMessageBox::critical(this, QObject::tr("Error"), p.name + ": " + m_serial->errorString());
 		ret = false;
-		m_console->putData(QObject::tr("串口无法打开: %1\r\n").arg(m_serial->portName()));
+		m_console->putData(QStringLiteral("串口无法打开: %1\r\n").arg(m_serial->portName()));
 
 		setUpUIFromSerialStatus(false);
 	}
@@ -117,7 +117,7 @@ void MainWindow::SerialPort_close()
 	m_serial->close();
 	setUpUIFromSerialStatus(false);
 
-	m_console->putData(QObject::tr("串口已关闭: %1\r\n").arg(m_serial->portName()));
+	m_console->putData(QStringLiteral("串口已关闭: %1\r\n").arg(m_serial->portName()));
 }
 
 void MainWindow::on_PB_openSerial_clicked()
