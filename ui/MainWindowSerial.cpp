@@ -75,6 +75,12 @@ void MainWindow::SerialPort_fillInfo()
 
 		ui->CBX_serial->addItem(list.first(), list);
 	}
+	// 自动选中第一个可用串口，并同步到设置对话框
+	if (ui->CBX_serial->count() > 0)
+	{
+		ui->CBX_serial->setCurrentIndex(0);
+		m_settingsDialog->setCurrentPortName(ui->CBX_serial->currentText());
+	}
 }
 
 
@@ -82,6 +88,27 @@ bool MainWindow::SerialPort_open()
 {
 	bool ret = false;
 	const SettingsDialog::Settings p = m_settingsDialog->settings();
+
+	fprintf(stdout, "[OpenESkin] 尝试打开串口: '%s' (%s, %s, %s, %s, %s)\n",
+		qPrintable(p.name),
+		qPrintable(p.stringBaudRate),
+		qPrintable(p.stringDataBits),
+		qPrintable(p.stringParity),
+		qPrintable(p.stringStopBits),
+		qPrintable(p.stringFlowControl));
+	fflush(stdout);
+
+	if (p.name.isEmpty())
+	{
+		fprintf(stderr, "[OpenESkin] 错误: 未选择串口端口! 请先连接串口设备或从下拉列表中选择一个端口。\n");
+		fflush(stderr);
+		QMessageBox::warning(this, tr("未选择串口"),
+			tr("请先选择一个串口端口!\n\n"
+			   "提示: 如果下拉列表为空，请确认串口设备已连接到电脑。"));
+		setUpUIFromSerialStatus(false);
+		return false;
+	}
+
 	m_serial->setPortName(p.name);
 	m_serial->setBaudRate(p.baudRate);
 	m_serial->setDataBits(p.dataBits);
@@ -95,11 +122,28 @@ bool MainWindow::SerialPort_open()
 			.arg(p.name).arg(p.stringBaudRate).arg(p.stringDataBits)
 			.arg(p.stringParity).arg(p.stringStopBits).arg(p.stringFlowControl));
 
+		fprintf(stdout, "[OpenESkin] 串口打开成功: %s\n", qPrintable(p.name));
+		fflush(stdout);
+
 		setUpUIFromSerialStatus(true);
 	}
 	else
 	{
-		QMessageBox::critical(this, QObject::tr("Error"), p.name + ": " + m_serial->errorString());
+		QString errorStr = m_serial->errorString();
+		QSerialPort::SerialPortError errorCode = m_serial->error();
+
+		fprintf(stderr, "[OpenESkin] 串口打开失败!\n");
+		fprintf(stderr, "  端口:      %s\n", qPrintable(p.name));
+		fprintf(stderr, "  错误码:    %d\n", (int)errorCode);
+		fprintf(stderr, "  错误信息:  %s\n", qPrintable(errorStr));
+		fprintf(stderr, "  波特率:    %s\n", qPrintable(p.stringBaudRate));
+		fprintf(stderr, "  数据位:    %s\n", qPrintable(p.stringDataBits));
+		fprintf(stderr, "  校验位:    %s\n", qPrintable(p.stringParity));
+		fprintf(stderr, "  停止位:    %s\n", qPrintable(p.stringStopBits));
+		fprintf(stderr, "  流控制:    %s\n", qPrintable(p.stringFlowControl));
+		fflush(stderr);
+
+		QMessageBox::critical(this, QObject::tr("Error"), p.name + ": " + errorStr);
 		ret = false;
 		m_console->putData(QStringLiteral("串口无法打开: %1\r\n").arg(m_serial->portName()));
 
