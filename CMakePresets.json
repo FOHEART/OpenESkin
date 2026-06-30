@@ -1,22 +1,53 @@
 {
-  "version": 3,
-  "configurePresets": [
-    {
-      "hidden": true,
-      "name": "Qt",
-      "cacheVariables": {
-        "CMAKE_PREFIX_PATH": "$env{QTDIR}"
-      },
-      "vendor": {
-        "qt-project.org/Qt": {
-          "checksum": "wVa86FgEkvdCTVp1/nxvrkaemJc="
+    "version": 6,
+    "configurePresets": [
+        {
+            "name": "default",
+            "displayName": "Visual Studio 2022 (x64)",
+            "description": "默认使用 VS2022 x64 编译配置",
+            "generator": "Visual Studio 17 2022",
+            "architecture": {
+                "value": "x64",
+                "strategy": "set"
+            },
+            "toolset": {
+                "value": "v143",
+                "strategy": "set"
+            },
+            "cacheVariables": {
+                "CMAKE_CXX_STANDARD": "11",
+                "CMAKE_CXX_STANDARD_REQUIRED": "ON"
+            }
+        },
+        {
+            "name": "debug",
+            "displayName": "VS2022 x64 (Debug)",
+            "description": "Debug 配置",
+            "inherits": "default",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
+        },
+        {
+            "name": "release",
+            "displayName": "VS2022 x64 (Release)",
+            "description": "Release 配置",
+            "inherits": "default",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release"
+            }
         }
-      }
-    }
-  ],
-  "vendor": {
-    "qt-project.org/Presets": {
-      "checksum": "67SmY24ZeVbebyKD0fGfIzb/bGI="
-    }
-  }
+    ],
+    "buildPresets": [
+        {
+            "name": "debug",
+            "description": "Debug 构建",
+            "configurePreset": "debug"
+        },
+        {
+            "name": "release",
+            "description": "Release 构建",
+            "configurePreset": "release"
+        }
+    ]
 }
