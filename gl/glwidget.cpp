@@ -165,18 +165,8 @@ void GLWidget::paintGL()
 	glEnable(GL_DEPTH_TEST);
 
 	view = camera.getViewMatrix();
-#if 0
-	//旋转
-	rotationAngle += 0.5f; // 每次绘制增加0.5度
-	if (rotationAngle >= 360.0f) rotationAngle -= 360.0f; // 保持在0-360度之间
-
-	model.setToIdentity();
-	model.rotate(rotationAngle, QVector3D(1.0f, 1.0f, 1.0f));
-#else if
 
 	rotateModel();
-#endif
-
 
 	//iterate m_stlLoaders
 	for (size_t i = 0; i < m_stlLoaders.size(); ++i)
