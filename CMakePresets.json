@@ -1,5 +1,5 @@
 {
-    "version": 6,
+    "version": 3,
     "configurePresets": [
         {
             "name": "default",
@@ -36,18 +36,109 @@
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release"
             }
+        },
+        {
+            "name": "linux-default",
+            "displayName": "Ubuntu (Unix Makefiles)",
+            "description": "Ubuntu/Linux 默认编译配置",
+            "generator": "Unix Makefiles",
+            "binaryDir": "${sourceDir}/build",
+            "cacheVariables": {
+                "CMAKE_CXX_STANDARD": "11",
+                "CMAKE_CXX_STANDARD_REQUIRED": "ON",
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+            },
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Linux"
+            }
+        },
+        {
+            "name": "linux-debug",
+            "displayName": "Ubuntu (Debug)",
+            "description": "Ubuntu/Linux Debug 编译配置",
+            "inherits": "linux-default",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
+        },
+        {
+            "name": "linux-release",
+            "displayName": "Ubuntu (Release)",
+            "description": "Ubuntu/Linux Release 编译配置",
+            "inherits": "linux-default",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release"
+            }
+        },
+        {
+            "name": "linux-debug-ninja",
+            "displayName": "Ubuntu (Ninja, Debug)",
+            "description": "Ubuntu/Linux Debug 编译配置 (Ninja)",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build-ninja",
+            "cacheVariables": {
+                "CMAKE_CXX_STANDARD": "11",
+                "CMAKE_CXX_STANDARD_REQUIRED": "ON",
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+            },
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Linux"
+            }
+        },
+        {
+            "name": "linux-release-ninja",
+            "displayName": "Ubuntu (Ninja, Release)",
+            "description": "Ubuntu/Linux Release 编译配置 (Ninja)",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build-ninja",
+            "cacheVariables": {
+                "CMAKE_CXX_STANDARD": "11",
+                "CMAKE_CXX_STANDARD_REQUIRED": "ON",
+                "CMAKE_BUILD_TYPE": "Release",
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+            },
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Linux"
+            }
         }
     ],
     "buildPresets": [
         {
             "name": "debug",
-            "description": "Debug 构建",
+            "description": "Debug 构建 (VS2022)",
             "configurePreset": "debug"
         },
         {
             "name": "release",
-            "description": "Release 构建",
+            "description": "Release 构建 (VS2022)",
             "configurePreset": "release"
+        },
+        {
+            "name": "linux-debug",
+            "description": "Ubuntu Debug 构建",
+            "configurePreset": "linux-debug"
+        },
+        {
+            "name": "linux-release",
+            "description": "Ubuntu Release 构建",
+            "configurePreset": "linux-release"
+        },
+        {
+            "name": "linux-debug-ninja",
+            "description": "Ubuntu Debug 构建 (Ninja)",
+            "configurePreset": "linux-debug-ninja"
+        },
+        {
+            "name": "linux-release-ninja",
+            "description": "Ubuntu Release 构建 (Ninja)",
+            "configurePreset": "linux-release-ninja"
         }
     ]
 }

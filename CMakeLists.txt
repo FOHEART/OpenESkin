@@ -166,6 +166,30 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
     )
 endif()
 
+# Linux 下设置管理员权限（SUID bit）
+# 构建后在可执行文件上设置 SUID 位，使其以 root 权限运行
+# 注意: 需要 sudo 执行此命令，因为 chown root 需要提权
+if(UNIX AND NOT APPLE)
+    # 方式一: 通过 install 设置 SUID（推荐，运行 sudo cmake --install . 时生效）
+    # 使用 SETUID 后，可执行文件将始终以 root 权限运行（相当于 Windows 的 requireAdministrator）
+    install(TARGETS ${PROJECT_NAME} DESTINATION bin
+            PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                        GROUP_READ GROUP_EXECUTE
+                        WORLD_READ WORLD_EXECUTE
+            SETUID)
+
+    # 方式二: 构建后自动设置 SUID（取消注释启用，需要 sudo 权限）
+    # add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+    #     COMMAND sudo chown root:root "$<TARGET_FILE:${PROJECT_NAME}>"
+    #     COMMAND sudo chmod u+s "$<TARGET_FILE:${PROJECT_NAME}>"
+    #     COMMENT "正在设置 SUID 权限，使 ${PROJECT_NAME} 以 root 权限运行..."
+    # )
+
+    # 方式三: 使用 pkexec + polkit（会弹出图形化密码框，类似 Windows UAC）
+    # 启用此方式需要: 1) 安装 polkit 策略文件  2) 通过 pkexec 启动程序
+    # 参看下方 add_custom_target 中的 polkit 相关命令
+endif()
+
 if(WIN32)
 # Make VS .vcxproj.filters mirror the real directory tree from the repo root
 source_group(TREE "${CMAKE_SOURCE_DIR}" FILES 
@@ -235,4 +259,101 @@ if(WIN32)
     else()
         message(WARNING "未找到windeployqt工具，自动部署功能将不可用")
     endif()
+endif()
+
+# ============================================================
+# Linux 下 pkexec/Polkit 支持（图形化密码弹窗）
+# ============================================================
+if(UNIX AND NOT APPLE)
+    # 配置 polkit 策略文件路径
+    set(POLKIT_ACTION_ID "io.github.openeskin")
+    set(POLKIT_POLICY_FILE "${CMAKE_BINARY_DIR}/${POLKIT_ACTION_ID}.policy")
+    set(POLKIT_INSTALL_DIR "/usr/share/polkit-1/actions")
+
+    # 生成 polkit 策略文件（用于 pkexec 图形化授权）
+    file(WRITE "${POLKIT_POLICY_FILE}" "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
+<!DOCTYPE policyconfig PUBLIC
+ \"-//freedesktop//DTD PolicyKit Policy Configuration 1.0//EN\"
+ \"http://www.freedesktop.org/standards/PolicyKit/1/policyconfig.dtd\">
+<policyconfig>
+  <action id=\"${POLKIT_ACTION_ID}\">
+    <description>Run ${PROJECT_NAME} with elevated privileges</description>
+    <message>Authentication is required to run ${PROJECT_NAME}</message>
+    <icon_name>${PROJECT_NAME}</icon_name>
+    <defaults>
+      <allow_any>auth_admin</allow_any>
+      <allow_inactive>auth_admin</allow_inactive>
+      <allow_active>auth_admin_keep</allow_active>
+    </defaults>
+    <annotate key=\"org.freedesktop.policykit.exec.path\">${CMAKE_INSTALL_PREFIX}/bin/${PROJECT_NAME}</annotate>
+    <annotate key=\"org.freedesktop.policykit.exec.allow_gui\">true</annotate>
+  </action>
+</policyconfig>
+")
+
+    # 生成 pkexec 启动器脚本（会弹出图形化密码框后启动程序）
+    set(LAUNCHER_SCRIPT "${CMAKE_BINARY_DIR}/${PROJECT_NAME}-pkexec.sh")
+    file(WRITE "${LAUNCHER_SCRIPT}" "#!/bin/bash
+# ${PROJECT_NAME} pkexec launcher
+# 使用 pkexec 以 root 权限启动程序，会自动弹出图形化密码输入框
+# 用法: 直接运行此脚本，或设置桌面文件 Exec 为此脚本路径
+PKEXEC_BIN=\"/usr/bin/pkexec\"
+APP_BIN=\"\$(dirname \"\$0\")/${PROJECT_NAME}\"
+
+if [ ! -f \"\${APP_BIN}\" ]; then
+    APP_BIN=\"${CMAKE_INSTALL_PREFIX}/bin/${PROJECT_NAME}\"
+fi
+
+if [ -f \"\${PKEXEC_BIN}\" ]; then
+    exec \"\${PKEXEC_BIN}\" \"\${APP_BIN}\" \"\$@\"
+else
+    # 回退: 直接运行（pkexec 未安装）
+    echo \"Warning: pkexec not found, running directly without elevation.\"
+    exec \"\${APP_BIN}\" \"\$@\"
+fi
+")
+    # 给启动器脚本添加可执行权限
+    file(CHMOD "${LAUNCHER_SCRIPT}" PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                                              GROUP_READ GROUP_EXECUTE
+                                              WORLD_READ WORLD_EXECUTE)
+
+    # 安装 polkit 策略文件（需要 sudo）
+    install(FILES "${POLKIT_POLICY_FILE}" DESTINATION "${POLKIT_INSTALL_DIR}")
+
+    # 安装 pkexec 启动器脚本
+    install(PROGRAMS "${LAUNCHER_SCRIPT}" DESTINATION bin
+            RENAME "${PROJECT_NAME}-pkexec")
+
+    # 添加一个自定义目标，一键完成所有 Linux 权限设置
+    add_custom_target(setup-linux-privileges ALL
+        COMMAND ${CMAKE_COMMAND} -E echo ""
+        COMMAND ${CMAKE_COMMAND} -E echo "============================================"
+        COMMAND ${CMAKE_COMMAND} -E echo "  ${PROJECT_NAME} - Linux Privilege Setup"
+        COMMAND ${CMAKE_COMMAND} -E echo "============================================"
+        COMMAND ${CMAKE_COMMAND} -E echo ""
+        COMMAND ${CMAKE_COMMAND} -E echo "Option 1 - Set SUID bit:"
+        COMMAND ${CMAKE_COMMAND} -E echo "  sudo chown root:root ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}"
+        COMMAND ${CMAKE_COMMAND} -E echo "  sudo chmod u+s ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}"
+        COMMAND ${CMAKE_COMMAND} -E echo ""
+        COMMAND ${CMAKE_COMMAND} -E echo "Option 2 - Use pkexec with password dialog:"
+        COMMAND ${CMAKE_COMMAND} -E echo "  sudo cp ${POLKIT_POLICY_FILE} ${POLKIT_INSTALL_DIR}/"
+        COMMAND ${CMAKE_COMMAND} -E echo "  Then run: ${LAUNCHER_SCRIPT}"
+        COMMAND ${CMAKE_COMMAND} -E echo ""
+        COMMAND ${CMAKE_COMMAND} -E echo "Option 3 - Run with sudo directly:"
+        COMMAND ${CMAKE_COMMAND} -E echo "  sudo ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}"
+        COMMAND ${CMAKE_COMMAND} -E echo ""
+        COMMENT "显示 Linux 权限设置说明"
+    )
+
+    message(STATUS "Linux 权限配置完成")
+    message(STATUS "  - Polkit 策略文件: ${POLKIT_POLICY_FILE}")
+    message(STATUS "  - pkexec 启动器: ${LAUNCHER_SCRIPT}")
+    message(STATUS "")
+    message(STATUS "Set SUID bit - no password prompt, runs as root:")
+    message(STATUS "  sudo chown root:root ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME} && sudo chmod u+s ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}")
+    message(STATUS "")
+    message(STATUS "Use pkexec - shows password dialog, recommended:")
+    message(STATUS "  sudo cp ${POLKIT_POLICY_FILE} ${POLKIT_INSTALL_DIR}/")
+    message(STATUS "  ${LAUNCHER_SCRIPT}")
+    message(STATUS "")
 endif()
